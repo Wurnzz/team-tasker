@@ -9,7 +9,57 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      tasks: {
+        Row: {
+          client: string
+          client_discussion: string | null
+          created_at: string | null
+          date_requested: string
+          deadline: string
+          description: string
+          id: string
+          login_details: string | null
+          notes: string | null
+          page_link: string | null
+          priority: Database["public"]["Enums"]["task_priority"]
+          status: Database["public"]["Enums"]["task_status"]
+          task_creator: string
+          updated_at: string | null
+        }
+        Insert: {
+          client: string
+          client_discussion?: string | null
+          created_at?: string | null
+          date_requested: string
+          deadline: string
+          description: string
+          id?: string
+          login_details?: string | null
+          notes?: string | null
+          page_link?: string | null
+          priority: Database["public"]["Enums"]["task_priority"]
+          status?: Database["public"]["Enums"]["task_status"]
+          task_creator: string
+          updated_at?: string | null
+        }
+        Update: {
+          client?: string
+          client_discussion?: string | null
+          created_at?: string | null
+          date_requested?: string
+          deadline?: string
+          description?: string
+          id?: string
+          login_details?: string | null
+          notes?: string | null
+          page_link?: string | null
+          priority?: Database["public"]["Enums"]["task_priority"]
+          status?: Database["public"]["Enums"]["task_status"]
+          task_creator?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +68,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      task_priority: "Low" | "Medium" | "High"
+      task_status: "Done" | "In progress" | "To do" | "Pending Review"
     }
     CompositeTypes: {
       [_ in never]: never
