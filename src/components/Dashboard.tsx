@@ -4,7 +4,7 @@ import { Task } from "@/types/task";
 import TaskList from "./TaskList";
 import TaskForm from "./TaskForm";
 import { Button } from "@/components/ui/button";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, ArrowUpDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
@@ -13,6 +13,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -97,10 +98,22 @@ export default function Dashboard() {
     createTaskMutation.mutate(task);
   };
 
-  const filteredTasks = tasks.filter((task) =>
+  // Filter and sort tasks
+  const sortedAndFilteredTasks = [...(tasks || [])].sort((a, b) => {
+    const comparison = a.client.localeCompare(b.client);
+    return sortDirection === "asc" ? comparison : -comparison;
+  }).filter((task) =>
     task.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
     task.client.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const toggleSort = () => {
+    setSortDirection(prev => prev === "asc" ? "desc" : "asc");
+    toast({
+      title: "Sorted by client",
+      description: `Tasks are now sorted by client name in ${sortDirection === "asc" ? "descending" : "ascending"} order.`,
+    });
+  };
 
   // Set up real-time subscription
   useEffect(() => {
@@ -152,17 +165,27 @@ export default function Dashboard() {
           </Dialog>
         </div>
 
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-          <Input
-            placeholder="Search tasks..."
-            className="pl-10"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+        <div className="flex gap-4 items-center">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+            <Input
+              placeholder="Search tasks..."
+              className="pl-10"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <Button
+            variant="outline"
+            onClick={toggleSort}
+            className="gap-2 whitespace-nowrap"
+          >
+            <ArrowUpDown size={16} />
+            Sort by Client {sortDirection === "asc" ? "A-Z" : "Z-A"}
+          </Button>
         </div>
 
-        <TaskList tasks={filteredTasks} />
+        <TaskList tasks={sortedAndFilteredTasks} />
       </div>
     </div>
   );
