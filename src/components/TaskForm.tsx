@@ -1,4 +1,3 @@
-
 import { useForm } from "react-hook-form";
 import { Task, TaskFormData } from "@/types/task";
 import { Button } from "@/components/ui/button";
@@ -24,6 +23,8 @@ import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface TaskFormProps {
   onSubmit: (task: Task) => void;
@@ -31,6 +32,24 @@ interface TaskFormProps {
 
 export default function TaskForm({ onSubmit }: TaskFormProps) {
   const form = useForm<TaskFormData>();
+
+  // Fetch clients for the dropdown
+  const { data: clients = [] } = useQuery({
+    queryKey: ['clients'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('clients')
+        .select('name')
+        .order('name');
+
+      if (error) {
+        console.error('Error fetching clients:', error);
+        throw error;
+      }
+
+      return data;
+    },
+  });
 
   const handleSubmit = (data: TaskFormData) => {
     const task: Task = {
@@ -106,9 +125,20 @@ export default function TaskForm({ onSubmit }: TaskFormProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Client</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a client" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {clients.map((client) => (
+                    <SelectItem key={client.name} value={client.name}>
+                      {client.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <FormMessage />
             </FormItem>
           )}
